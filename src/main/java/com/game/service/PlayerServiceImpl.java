@@ -6,21 +6,22 @@ import com.game.entity.Race;
 import com.game.exceptions.BadRequestException;
 import com.game.exceptions.PlayerNotFoundException;
 import com.game.repository.PlayerRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+
 @Service
 public class PlayerServiceImpl implements PlayerService {
+    private final static Logger logger = LogManager.getLogger(PlayerServiceImpl.class);
 
     private PlayerRepository playerRepository;
 
@@ -53,16 +54,6 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Long idChecker(String id) {
-        /*if (id == null || id.equals("0") || id.equals("")) { //todo: Check ID validations for correctness
-            throw new BadRequestException("ID is incorrect.");
-        }
-
-        try {
-            return Long.parseLong(id);
-        } catch (NumberFormatException e) {
-            throw new BadRequestException("ID isn't a number", e);
-        }*/
-
         try {
             Long idLong = Long.parseLong(id);
             if (idLong <= 0) {
@@ -76,13 +67,12 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     private Integer calculateCurrentLevel(Player player) {
-        return BigDecimal.valueOf(((Math.sqrt(2500 + 200 * player.getExperience())) - 50) / 100).intValue();
+        return (int) ((Math.sqrt(2500 + 200 * player.getExperience())) - 50) / 100;
     }
 
     private Integer calculateUntilNextLevel(Player player) {
-        return BigDecimal.valueOf(
-                50 * (calculateCurrentLevel(player) + 1) * (calculateCurrentLevel(player) + 2) - player.getExperience())
-                .intValue();
+        return 50 * (calculateCurrentLevel(player) + 1) * (calculateCurrentLevel(player) + 2) - player.getExperience();
+
     }
 
     @Override
@@ -120,6 +110,8 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Player updatePlayer(String idString, Player player) {
+        logger.trace("Зашли в метод(trace)");
+        logger.debug("так же зашли (debug)");
 
         //Если id не валидный
         Long id;
@@ -128,7 +120,7 @@ public class PlayerServiceImpl implements PlayerService {
 
         //Если элемента с таким id нет в базе
         if (!playerRepository.existsById(id))
-            throw  new PlayerNotFoundException("Player is not found.");
+            throw new PlayerNotFoundException("Player is not found.");
         else {
             Player changedPlayer = playerRepository.findById(id).get();
 
@@ -153,8 +145,10 @@ public class PlayerServiceImpl implements PlayerService {
                 if (player.getProfession() != null) changedPlayer.setProfession(player.getProfession());
                 if (player.getBirthday() != null) changedPlayer.setBirthday(player.getBirthday());
                 if (player.getBanned() != null) changedPlayer.setBanned(player.getBanned());
-                if (player.getExperience() != null) changedPlayer.setExperience(changedPlayer.getExperience());
+                if (player.getExperience() != null) changedPlayer.setExperience(player.getExperience());
+                logger.info("Вычисление уровня");
                 changedPlayer.setLevel(calculateCurrentLevel(changedPlayer));
+                logger.info("Уровень вычислен " + changedPlayer.getLevel());
                 changedPlayer.setUntilNextLevel(calculateUntilNextLevel(changedPlayer));
 
             }
@@ -315,7 +309,7 @@ public class PlayerServiceImpl implements PlayerService {
                 return criteriaBuilder.greaterThanOrEqualTo(root.get("level"), minLevel);
             }
 
-            return criteriaBuilder.between(root.get("level"), maxLevel, maxLevel);
+            return criteriaBuilder.between(root.get("level"), minLevel, maxLevel);
         };
     }
 }
