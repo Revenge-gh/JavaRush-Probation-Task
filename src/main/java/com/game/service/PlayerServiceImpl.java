@@ -6,8 +6,6 @@ import com.game.entity.Race;
 import com.game.exceptions.BadRequestException;
 import com.game.exceptions.PlayerNotFoundException;
 import com.game.repository.PlayerRepository;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,7 +19,6 @@ import java.util.List;
 
 @Service
 public class PlayerServiceImpl implements PlayerService {
-    private final static Logger logger = LogManager.getLogger(PlayerServiceImpl.class);
 
     private PlayerRepository playerRepository;
 
@@ -30,30 +27,28 @@ public class PlayerServiceImpl implements PlayerService {
         this.playerRepository = playerRepository;
     }
 
-    private void parameterChecker(Player player) {
-        if (player.getName() != null && (player.getName().length() < 1 || player.getName().length() > 12)) {
+    private void validateFields(Player player) {
+
+        if (player.getName() != null && (player.getName().length() < 1 || player.getName().length() > 12))
             throw new BadRequestException("Character name is too long or missing.");
-        }
 
-        if (player.getTitle() != null && (player.getTitle().length() < 1 || player.getTitle().length() > 30)) {
+        if (player.getTitle() != null && (player.getTitle().length() < 1 || player.getTitle().length() > 30))
             throw new BadRequestException("Character title is too long or missing.");
-        }
 
-        if (player.getExperience() != null && (player.getExperience() < 1 || player.getExperience() > 10000000)) {
+        if (player.getExperience() != null && (player.getExperience() < 1 || player.getExperience() > 10000000))
             throw new BadRequestException("Character experience out of range.");
-        }
 
         if (player.getBirthday() != null) {
             Calendar date = Calendar.getInstance();
             date.setTime(player.getBirthday());
-            if (date.get(Calendar.YEAR) < 2000 || date.get(Calendar.YEAR) > 3000) {
+            if (date.get(Calendar.YEAR) < 2000 || date.get(Calendar.YEAR) > 3000)
                 throw new BadRequestException("Registration date out of range.");
-            }
+
         }
     }
 
     @Override
-    public Long idChecker(String id) {
+    public Long validateId(String id) {
         try {
             Long idLong = Long.parseLong(id);
             if (idLong <= 0) {
@@ -92,15 +87,13 @@ public class PlayerServiceImpl implements PlayerService {
                 || player.getRace() == null
                 || player.getProfession() == null
                 || player.getBirthday() == null
-                || player.getExperience() == null) {
+                || player.getExperience() == null)
             throw new BadRequestException("Please fill in all required fields");
-        }
 
-        parameterChecker(player);
+        validateFields(player);
 
-        if (player.getBanned() == null) {
+        if (player.getBanned() == null)
             player.setBanned(false);
-        }
 
         player.setLevel(calculateCurrentLevel(player));
         player.setUntilNextLevel(calculateUntilNextLevel(player));
@@ -109,50 +102,42 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public Player updatePlayer(String idString, Player player) {
-        logger.trace("Зашли в метод(trace)");
-        logger.debug("так же зашли (debug)");
+    public Player updatePlayer(Long id, Player player) {
 
-        //Если id не валидный
-        Long id;
-        if ((id = idChecker(idString)) == null)
-            throw new BadRequestException("ID is incorrect.");
-
-        //Если элемента с таким id нет в базе
-        if (!playerRepository.existsById(id))
+        //Если игрока с таким id нет в базе
+        if (!playerRepository.existsById(id)) {
             throw new PlayerNotFoundException("Player is not found.");
-        else {
-            Player changedPlayer = playerRepository.findById(id).get();
+        } else {
+            Player editablePlayer = playerRepository.findById(id).get();
 
             // Если тело запроса пустое
             if (player.getName() == null && player.getTitle() == null
                     && player.getRace() == null && player.getProfession() == null
-                    && player.getBirthday() == null && player.getBanned() == null && player.getExperience() == null)
-                //Возвращяем корабль из базы
-                player = changedPlayer;
-            else {
+                    && player.getBirthday() == null && player.getBanned() == null && player.getExperience() == null) {
+
+                return editablePlayer;
+            } else {
                 //Если поля не валидные
                 if ((player.getName() != null && (player.getName().length() < 1 || player.getName().length() > 12))
                         || (player.getTitle() != null && (player.getTitle().length() < 1 || player.getTitle().length() > 30))
                         || (player.getExperience() != null && (player.getExperience() < 1 || player.getExperience() > 10000000))
-                        || (player.getBirthday() != null && (player.getBirthday().getYear() + 1900 < 2000 || player.getBirthday().getYear() + 1900 > 3000)))
-                    throw new BadRequestException("Incorrect fields.");
+                        || (player.getBirthday() != null && (player.getBirthday().getYear() + 1900 < 2000 || player.getBirthday().getYear() + 1900 > 3000))) {
+                    throw new BadRequestException("Invalid fields.");
+                }
 
                 //Заменяем непустыми значениями
-                if (player.getName() != null) changedPlayer.setName(player.getName());
-                if (player.getTitle() != null) changedPlayer.setTitle(player.getTitle());
-                if (player.getRace() != null) changedPlayer.setRace(player.getRace());
-                if (player.getProfession() != null) changedPlayer.setProfession(player.getProfession());
-                if (player.getBirthday() != null) changedPlayer.setBirthday(player.getBirthday());
-                if (player.getBanned() != null) changedPlayer.setBanned(player.getBanned());
-                if (player.getExperience() != null) changedPlayer.setExperience(player.getExperience());
-                logger.info("Вычисление уровня");
-                changedPlayer.setLevel(calculateCurrentLevel(changedPlayer));
-                logger.info("Уровень вычислен " + changedPlayer.getLevel());
-                changedPlayer.setUntilNextLevel(calculateUntilNextLevel(changedPlayer));
+                if (player.getName() != null) editablePlayer.setName(player.getName());
+                if (player.getTitle() != null) editablePlayer.setTitle(player.getTitle());
+                if (player.getRace() != null) editablePlayer.setRace(player.getRace());
+                if (player.getProfession() != null) editablePlayer.setProfession(player.getProfession());
+                if (player.getBirthday() != null) editablePlayer.setBirthday(player.getBirthday());
+                if (player.getBanned() != null) editablePlayer.setBanned(player.getBanned());
+                if (player.getExperience() != null) editablePlayer.setExperience(player.getExperience());
+                editablePlayer.setLevel(calculateCurrentLevel(editablePlayer));
+                editablePlayer.setUntilNextLevel(calculateUntilNextLevel(editablePlayer));
 
             }
-            return playerRepository.save(changedPlayer);
+            return playerRepository.save(editablePlayer);
         }
 /*
         if (playerRepository.existsById(id)) {

@@ -13,10 +13,10 @@ public interface PlayerService {
     List<Player> getAllRegisteredPlayersList(Specification<Player> specification);
     Page<Player> getAllRegisteredPlayersList(Specification<Player> specification, Pageable sortedByName);
     Player createPlayer(Player player);
-    Player updatePlayer(String id, Player player);
+    Player updatePlayer(Long id, Player player);
     void deletePlayer(Long id);
     Player getPlayer(Long id);
-    Long idChecker(String id);
+    Long validateId(String id);
     Specification<Player> nameFilter(String name);
     Specification<Player> titleFilter(String title);
     Specification<Player> raceFilter(Race race);

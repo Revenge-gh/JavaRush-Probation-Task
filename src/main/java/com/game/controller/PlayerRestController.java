@@ -98,21 +98,21 @@ public class PlayerRestController {
     @GetMapping("/players/{id}")
     @ResponseStatus(HttpStatus.OK)
     public Player getPlayer(@PathVariable("id") String id) {
-        Long iD = playerService.idChecker(id);
+        Long iD = playerService.validateId(id);
         return playerService.getPlayer(iD);
     }
 
     @PostMapping("/players/{id}")
     @ResponseStatus(HttpStatus.OK)
     public Player updatePlayer(@PathVariable("id") String id, @RequestBody Player player) {
-        //Long iD = playerService.idChecker(id);
-        return playerService.updatePlayer(id, player);
+        Long iD = playerService.validateId(id);
+        return playerService.updatePlayer(iD, player);
     }
 
     @DeleteMapping("/players/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void deletePlayer(@PathVariable("id") String id) {
-        Long iD = playerService.idChecker(id);
+        Long iD = playerService.validateId(id);
         playerService.deletePlayer(iD);
     }
 
