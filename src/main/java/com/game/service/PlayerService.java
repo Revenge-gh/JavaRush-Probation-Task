@@ -17,12 +17,4 @@ public interface PlayerService {
     void deletePlayer(Long id);
     Player getPlayer(Long id);
     Long validateId(String id);
-    Specification<Player> nameFilter(String name);
-    Specification<Player> titleFilter(String title);
-    Specification<Player> raceFilter(Race race);
-    Specification<Player> professionFilter(Profession profession);
-    Specification<Player> birthdayFilter(Long after, Long before);
-    Specification<Player> bannedFilter(Boolean banned);
-    Specification<Player> experienceFilter(Integer minExperience, Integer maxExperience);
-    Specification<Player> levelFilter(Integer minLevel, Integer maxLevel);
 }

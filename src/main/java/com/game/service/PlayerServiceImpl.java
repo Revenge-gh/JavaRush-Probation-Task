@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -29,20 +30,23 @@ public class PlayerServiceImpl implements PlayerService {
 
     private void validateFields(Player player) {
 
-        if (player.getName() != null && (player.getName().length() < 1 || player.getName().length() > 12))
+        if (player.getName() != null && (player.getName().length() < 1 || player.getName().length() > 12)) {
             throw new BadRequestException("Character name is too long or missing.");
+        }
 
-        if (player.getTitle() != null && (player.getTitle().length() < 1 || player.getTitle().length() > 30))
+        if (player.getTitle() != null && (player.getTitle().length() < 1 || player.getTitle().length() > 30)) {
             throw new BadRequestException("Character title is too long or missing.");
+        }
 
-        if (player.getExperience() != null && (player.getExperience() < 1 || player.getExperience() > 10000000))
+        if (player.getExperience() != null && (player.getExperience() < 1 || player.getExperience() > 10000000)) {
             throw new BadRequestException("Character experience out of range.");
-
+        }
         if (player.getBirthday() != null) {
             Calendar date = Calendar.getInstance();
             date.setTime(player.getBirthday());
-            if (date.get(Calendar.YEAR) < 2000 || date.get(Calendar.YEAR) > 3000)
+            if (date.get(Calendar.YEAR) < 2000 || date.get(Calendar.YEAR) > 3000) {
                 throw new BadRequestException("Registration date out of range.");
+            }
 
         }
     }
@@ -53,9 +57,8 @@ public class PlayerServiceImpl implements PlayerService {
             Long idLong = Long.parseLong(id);
             if (idLong <= 0) {
                 throw new BadRequestException("ID is incorrect.");
-            } else {
-                return idLong;
             }
+            return idLong;
         } catch (NumberFormatException e) {
             throw new BadRequestException("ID isn't a number", e);
         }
@@ -103,21 +106,20 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Player updatePlayer(Long id, Player player) {
-
-        //Если игрока с таким id нет в базе
         if (!playerRepository.existsById(id)) {
             throw new PlayerNotFoundException("Player is not found.");
         } else {
             Player editablePlayer = playerRepository.findById(id).get();
 
-            // Если тело запроса пустое
-            if (player.getName() == null && player.getTitle() == null
-                    && player.getRace() == null && player.getProfession() == null
-                    && player.getBirthday() == null && player.getBanned() == null && player.getExperience() == null) {
-
+            if (player.getName() == null
+                    && player.getTitle() == null
+                    && player.getRace() == null
+                    && player.getProfession() == null
+                    && player.getBirthday() == null
+                    && player.getBanned() == null
+                    && player.getExperience() == null) {
                 return editablePlayer;
             } else {
-                //Если поля не валидные
                 if ((player.getName() != null && (player.getName().length() < 1 || player.getName().length() > 12))
                         || (player.getTitle() != null && (player.getTitle().length() < 1 || player.getTitle().length() > 30))
                         || (player.getExperience() != null && (player.getExperience() < 1 || player.getExperience() > 10000000))
@@ -125,66 +127,19 @@ public class PlayerServiceImpl implements PlayerService {
                     throw new BadRequestException("Invalid fields.");
                 }
 
-                //Заменяем непустыми значениями
-                if (player.getName() != null) editablePlayer.setName(player.getName());
-                if (player.getTitle() != null) editablePlayer.setTitle(player.getTitle());
-                if (player.getRace() != null) editablePlayer.setRace(player.getRace());
-                if (player.getProfession() != null) editablePlayer.setProfession(player.getProfession());
-                if (player.getBirthday() != null) editablePlayer.setBirthday(player.getBirthday());
-                if (player.getBanned() != null) editablePlayer.setBanned(player.getBanned());
-                if (player.getExperience() != null) editablePlayer.setExperience(player.getExperience());
+                Optional.ofNullable(player.getName()).ifPresent(editablePlayer::setName);
+                Optional.ofNullable(player.getTitle()).ifPresent(editablePlayer::setTitle);
+                Optional.ofNullable(player.getRace()).ifPresent(editablePlayer::setRace);
+                Optional.ofNullable(player.getProfession()).ifPresent(editablePlayer::setProfession);
+                Optional.ofNullable(player.getBirthday()).ifPresent(editablePlayer::setBirthday);
+                Optional.ofNullable(player.getBanned()).ifPresent(editablePlayer::setBanned);
+                Optional.ofNullable(player.getExperience()).ifPresent(editablePlayer::setExperience);
                 editablePlayer.setLevel(calculateCurrentLevel(editablePlayer));
                 editablePlayer.setUntilNextLevel(calculateUntilNextLevel(editablePlayer));
 
             }
             return playerRepository.save(editablePlayer);
         }
-/*
-        if (playerRepository.existsById(id)) {
-            throw new PlayerNotFoundException("Player is not found.");
-        } else {
-
-            parameterChecker(player);
-
-            Player changePlayer = playerRepository.findById(id).get();
-
-            if (player.getName() != null) {
-                changePlayer.setName(player.getName());
-            }
-
-            if (player.getTitle() != null) {
-                changePlayer.setTitle(player.getTitle());
-            }
-
-            if (player.getRace() != null) {
-                changePlayer.setRace(player.getRace());
-            }
-
-            if (player.getProfession() != null) {
-                changePlayer.setProfession(player.getProfession());
-            }
-
-            if (player.getBirthday() != null) {
-                changePlayer.setBirthday(player.getBirthday());
-            }
-
-            if (player.getBanned() != null) {
-                changePlayer.setBanned(player.getBanned());
-            }
-
-            if (player.getExperience() != null) {
-                changePlayer.setExperience(player.getExperience());
-            }
-
-       *//* Integer level = calculateCurrentLevel(player);
-        changePlayer.setLevel(level);
-
-        Integer untilNextLevel = calculateUntilNextLevel(player);
-        changePlayer.setUntilNextLevel(untilNextLevel);*//*
-
-
-            return playerRepository.save(changePlayer);
-        }*/
     }
 
     @Override
@@ -204,97 +159,5 @@ public class PlayerServiceImpl implements PlayerService {
         return playerRepository.findById(id).get();
     }
 
-    @Override
-    public Specification<Player> nameFilter(String name) {
-        return (root, query, criteriaBuilder) -> name == null ? null : criteriaBuilder.like(root.get("name"), "%" + name + "%");
-    }
 
-    @Override
-    public Specification<Player> titleFilter(String title) {
-        return (root, query, criteriaBuilder) -> title == null ? null : criteriaBuilder.like(root.get("title"), "%" + title + "%");
-    }
-
-    @Override
-    public Specification<Player> raceFilter(Race race) {
-        return (root, query, criteriaBuilder) -> race == null ? null : criteriaBuilder.equal(root.get("race"), race);
-    }
-
-    @Override
-    public Specification<Player> professionFilter(Profession profession) {
-        return (root, query, criteriaBuilder) -> profession == null ? null : criteriaBuilder.equal(root.get("profession"), profession);
-    }
-
-    @Override
-    public Specification<Player> birthdayFilter(Long after, Long before) {
-        return (root, query, criteriaBuilder) -> {
-            if (after == null && before == null) {
-                return null;
-            }
-            if (after == null) {
-                Date bf = new Date(before);
-                return criteriaBuilder.lessThanOrEqualTo(root.get("birthday"), bf);
-            }
-            if (before == null) {
-                Date af = new Date(after);
-                return criteriaBuilder.greaterThanOrEqualTo(root.get("birthday"), af);
-            }
-
-            Date bf = new Date(before - 3600001);
-            Date af = new Date(after);
-            return criteriaBuilder.between(root.get("birthday"), af, bf);
-        };
-    }
-
-    @Override
-    public Specification<Player> bannedFilter(Boolean banned) {
-        return (root, query, criteriaBuilder) -> {
-            if (banned == null) {
-                return null;
-            }
-
-            if (banned) {
-                return criteriaBuilder.isTrue(root.get("banned"));
-            } else {
-                return criteriaBuilder.isFalse(root.get("banned"));
-            }
-        };
-    }
-
-    @Override
-    public Specification<Player> experienceFilter(Integer minExperience, Integer maxExperience) {
-        return (root, query, criteriaBuilder) -> {
-            if (minExperience == null && maxExperience == null) {
-                return null;
-            }
-
-            if (minExperience == null) {
-                return criteriaBuilder.lessThanOrEqualTo(root.get("experience"), maxExperience);
-            }
-
-            if (maxExperience == null) {
-                return criteriaBuilder.greaterThanOrEqualTo(root.get("experience"), minExperience);
-            }
-
-            return criteriaBuilder.between(root.get("experience"), minExperience, maxExperience);
-        };
-    }
-
-    @Override
-    public Specification<Player> levelFilter(Integer minLevel, Integer maxLevel) {
-        return (root, query, criteriaBuilder) -> {
-            if (minLevel == null && maxLevel == null) {
-                return null;
-            }
-
-            if (minLevel == null) {
-                return criteriaBuilder.lessThanOrEqualTo(root.get("level"), maxLevel);
-            }
-
-            if (maxLevel == null) {
-                return criteriaBuilder.greaterThanOrEqualTo(root.get("level"), minLevel);
-            }
-
-            return criteriaBuilder.between(root.get("level"), minLevel, maxLevel);
-        };
-    }
 }

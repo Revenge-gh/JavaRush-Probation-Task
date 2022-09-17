@@ -3,6 +3,7 @@ package com.game.controller;
 import com.game.entity.Player;
 import com.game.entity.Profession;
 import com.game.entity.Race;
+import com.game.service.PlayerFilters;
 import com.game.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -47,14 +48,14 @@ public class PlayerRestController {
 
         return playerService.getAllRegisteredPlayersList(
                 Specification.where(
-                        playerService.nameFilter(name)
-                        .and(playerService.titleFilter(title)))
-                        .and(playerService.raceFilter(race))
-                        .and(playerService.professionFilter(profession))
-                        .and(playerService.birthdayFilter(after, before))
-                        .and(playerService.bannedFilter(banned))
-                        .and(playerService.experienceFilter(minExperience, maxExperience))
-                        .and(playerService.levelFilter(minLevel, maxLevel)), pageable)
+                        PlayerFilters.nameFilter(name)
+                        .and(PlayerFilters.titleFilter(title)))
+                        .and(PlayerFilters.raceFilter(race))
+                        .and(PlayerFilters.professionFilter(profession))
+                        .and(PlayerFilters.birthdayFilter(after, before))
+                        .and(PlayerFilters.bannedFilter(banned))
+                        .and(PlayerFilters.experienceFilter(minExperience, maxExperience))
+                        .and(PlayerFilters.levelFilter(minLevel, maxLevel)), pageable)
                 .getContent();
 
     }
@@ -77,14 +78,14 @@ public class PlayerRestController {
 
         return playerService.getAllRegisteredPlayersList(
                 Specification.where(
-                        playerService.nameFilter(name)
-                        .and(playerService.titleFilter(title)))
-                        .and(playerService.raceFilter(race))
-                        .and(playerService.professionFilter(profession))
-                        .and(playerService.birthdayFilter(after, before))
-                        .and(playerService.bannedFilter(banned))
-                        .and(playerService.experienceFilter(minExperience, maxExperience))
-                        .and(playerService.levelFilter(minLevel, maxLevel)))
+                                PlayerFilters.nameFilter(name)
+                        .and(PlayerFilters.titleFilter(title)))
+                        .and(PlayerFilters.raceFilter(race))
+                        .and(PlayerFilters.professionFilter(profession))
+                        .and(PlayerFilters.birthdayFilter(after, before))
+                        .and(PlayerFilters.bannedFilter(banned))
+                        .and(PlayerFilters.experienceFilter(minExperience, maxExperience))
+                        .and(PlayerFilters.levelFilter(minLevel, maxLevel)))
                 .size();
 
     }
