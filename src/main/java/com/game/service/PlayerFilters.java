@@ -30,9 +30,11 @@ public class PlayerFilters {
             if (after == null && before == null) {
                 return null;
             }
+
             if (after == null) {
                 return criteriaBuilder.lessThanOrEqualTo(root.get("birthday"), new Date(before));
             }
+
             if (before == null) {
                 return criteriaBuilder.greaterThanOrEqualTo(root.get("birthday"), new Date(after));
             }

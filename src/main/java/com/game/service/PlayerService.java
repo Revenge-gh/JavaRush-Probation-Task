@@ -1,8 +1,6 @@
 package com.game.service;
 
 import com.game.entity.Player;
-import com.game.entity.Profession;
-import com.game.entity.Race;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -10,11 +8,15 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.List;
 
 public interface PlayerService {
-    List<Player> getAllRegisteredPlayersList(Specification<Player> specification);
-    Page<Player> getAllRegisteredPlayersList(Specification<Player> specification, Pageable sortedByName);
+    List<Player> getCount(Specification<Player> specification);
+
+    Page<Player> getAllPlayers(Specification<Player> specification, Pageable sortedByName);
+
     Player createPlayer(Player player);
-    Player updatePlayer(Long id, Player player);
-    void deletePlayer(Long id);
-    Player getPlayer(Long id);
-    Long validateId(String id);
+
+    Player updatePlayer(String id, Player player);
+
+    Player getPlayer(String id);
+
+    void deletePlayer(String id);
 }

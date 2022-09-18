@@ -1,8 +1,6 @@
 package com.game.service;
 
 import com.game.entity.Player;
-import com.game.entity.Profession;
-import com.game.entity.Race;
 import com.game.exceptions.BadRequestException;
 import com.game.exceptions.PlayerNotFoundException;
 import com.game.repository.PlayerRepository;
@@ -13,7 +11,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,23 +38,25 @@ public class PlayerServiceImpl implements PlayerService {
         if (player.getExperience() != null && (player.getExperience() < 1 || player.getExperience() > 10000000)) {
             throw new BadRequestException("Character experience out of range.");
         }
+
         if (player.getBirthday() != null) {
             Calendar date = Calendar.getInstance();
             date.setTime(player.getBirthday());
+
             if (date.get(Calendar.YEAR) < 2000 || date.get(Calendar.YEAR) > 3000) {
                 throw new BadRequestException("Registration date out of range.");
             }
-
         }
     }
 
-    @Override
     public Long validateId(String id) {
         try {
             Long idLong = Long.parseLong(id);
+
             if (idLong <= 0) {
                 throw new BadRequestException("ID is incorrect.");
             }
+
             return idLong;
         } catch (NumberFormatException e) {
             throw new BadRequestException("ID isn't a number", e);
@@ -74,12 +73,12 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public List<Player> getAllRegisteredPlayersList(Specification<Player> specification) {
+    public List<Player> getCount(Specification<Player> specification) {
         return playerRepository.findAll(specification);
     }
 
     @Override
-    public Page<Player> getAllRegisteredPlayersList(Specification<Player> specification, Pageable sortedByName) {
+    public Page<Player> getAllPlayers(Specification<Player> specification, Pageable sortedByName) {
         return playerRepository.findAll(specification, sortedByName);
     }
 
@@ -105,7 +104,9 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public Player updatePlayer(Long id, Player player) {
+    public Player updatePlayer(String idString, Player player) {
+        Long id = validateId(idString);
+
         if (!playerRepository.existsById(id)) {
             throw new PlayerNotFoundException("Player is not found.");
         } else {
@@ -120,6 +121,7 @@ public class PlayerServiceImpl implements PlayerService {
                     && player.getExperience() == null) {
                 return editablePlayer;
             } else {
+
                 if ((player.getName() != null && (player.getName().length() < 1 || player.getName().length() > 12))
                         || (player.getTitle() != null && (player.getTitle().length() < 1 || player.getTitle().length() > 30))
                         || (player.getExperience() != null && (player.getExperience() < 1 || player.getExperience() > 10000000))
@@ -143,7 +145,9 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public void deletePlayer(Long id) {
+    public void deletePlayer(String idString) {
+        Long id = validateId(idString);
+
         if (playerRepository.existsById(id)) {
             playerRepository.deleteById(id);
         } else {
@@ -152,7 +156,9 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public Player getPlayer(Long id) {
+    public Player getPlayer(String idString) {
+        Long id = validateId(idString);
+
         if (!playerRepository.existsById(id)) {
             throw new PlayerNotFoundException("Player is not found.");
         }

@@ -28,7 +28,7 @@ public class PlayerRestController {
 
     @GetMapping("/players")
     @ResponseStatus(HttpStatus.OK)
-    public List<Player> getAllRegisteredPlayersList(
+    public List<Player> getPlayersList(
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "race", required = false) Race race,
@@ -46,10 +46,10 @@ public class PlayerRestController {
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(order.getFieldName()));
 
-        return playerService.getAllRegisteredPlayersList(
+        return playerService.getAllPlayers(
                 Specification.where(
                         PlayerFilters.nameFilter(name)
-                        .and(PlayerFilters.titleFilter(title)))
+                                .and(PlayerFilters.titleFilter(title)))
                         .and(PlayerFilters.raceFilter(race))
                         .and(PlayerFilters.professionFilter(profession))
                         .and(PlayerFilters.birthdayFilter(after, before))
@@ -59,7 +59,6 @@ public class PlayerRestController {
                 .getContent();
 
     }
-
 
     @GetMapping("/players/count")
     @ResponseStatus(HttpStatus.OK)
@@ -76,10 +75,10 @@ public class PlayerRestController {
             @RequestParam(value = "minLevel", required = false) Integer minLevel,
             @RequestParam(value = "maxLevel", required = false) Integer maxLevel) {
 
-        return playerService.getAllRegisteredPlayersList(
+        return playerService.getCount(
                 Specification.where(
-                                PlayerFilters.nameFilter(name)
-                        .and(PlayerFilters.titleFilter(title)))
+                        PlayerFilters.nameFilter(name)
+                                .and(PlayerFilters.titleFilter(title)))
                         .and(PlayerFilters.raceFilter(race))
                         .and(PlayerFilters.professionFilter(profession))
                         .and(PlayerFilters.birthdayFilter(after, before))
@@ -87,7 +86,6 @@ public class PlayerRestController {
                         .and(PlayerFilters.experienceFilter(minExperience, maxExperience))
                         .and(PlayerFilters.levelFilter(minLevel, maxLevel)))
                 .size();
-
     }
 
     @PostMapping("/players")
@@ -99,22 +97,18 @@ public class PlayerRestController {
     @GetMapping("/players/{id}")
     @ResponseStatus(HttpStatus.OK)
     public Player getPlayer(@PathVariable("id") String id) {
-        Long iD = playerService.validateId(id);
-        return playerService.getPlayer(iD);
+        return playerService.getPlayer(id);
     }
 
     @PostMapping("/players/{id}")
     @ResponseStatus(HttpStatus.OK)
     public Player updatePlayer(@PathVariable("id") String id, @RequestBody Player player) {
-        Long iD = playerService.validateId(id);
-        return playerService.updatePlayer(iD, player);
+        return playerService.updatePlayer(id, player);
     }
 
     @DeleteMapping("/players/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void deletePlayer(@PathVariable("id") String id) {
-        Long iD = playerService.validateId(id);
-        playerService.deletePlayer(iD);
+        playerService.deletePlayer(id);
     }
-
 }
